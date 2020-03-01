@@ -5,6 +5,7 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 
 import java.io.IOException;
+import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -31,17 +32,12 @@ public class BaseRabbitmq {
 
     protected Connection connection;
 
-    protected Channel channel;
+
 
 
     public BaseRabbitmq() {
     }
 
-
-
-    public Channel getChannel() {
-        return channel;
-    }
 
     /***
      * 配置，连接rabbitmq server
@@ -60,12 +56,51 @@ public class BaseRabbitmq {
         this.virHost = virHost;
         try {
             this.connection = RabbitmqUtils.getConnection(host, port, userName, passWord, virHost);
-            this.channel = RabbitmqUtils.getChannel(this.connection);
         } catch (Exception e) {
             e.printStackTrace();
             return -1;
         }
         return 1;
+    }
+
+
+    /***
+     * 创建通道
+     * @return
+     */
+    public Channel createChannel(String tag){
+        Channel channel = null;
+        try {
+            channel = RabbitmqUtils.getChannel(this.connection);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return  channel;
+    }
+
+
+
+
+
+    public void close(){
+        try {
+            this.connection.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+
+    public void  closeChannel(Channel channel){
+        try {
+            channel.close();
+//            this.channelMap.remove(channel);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (TimeoutException e) {
+            e.printStackTrace();
+        }
     }
 
 }
