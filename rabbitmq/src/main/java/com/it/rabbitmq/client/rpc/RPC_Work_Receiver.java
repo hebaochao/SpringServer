@@ -2,10 +2,7 @@ package com.it.rabbitmq.client.rpc;
 
 import com.it.rabbitmq.client.base.BaseRabbitmq;
 import com.it.rabbitmq.constant.IRabbitmq;
-import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.Consumer;
-import com.rabbitmq.client.DefaultConsumer;
-import com.rabbitmq.client.Envelope;
+import com.rabbitmq.client.*;
 
 import java.io.IOException;
 import java.util.Map;
@@ -33,7 +30,7 @@ public class RPC_Work_Receiver extends BaseRabbitmq {
      * @param arguments
      * @throws IOException
      */
-    private void configQueue(String queue, boolean durable, boolean exclusive, boolean autoDelete,
+    private void configQueue(Channel channel, String queue, boolean durable, boolean exclusive, boolean autoDelete,
                              Map<String, Object> arguments, boolean autoAck, Consumer consumer) throws IOException {
         //声明队列
         channel.queueDeclare(queue, durable, exclusive, autoDelete, arguments);
@@ -43,9 +40,10 @@ public class RPC_Work_Receiver extends BaseRabbitmq {
     public static void main(String[] args) throws IOException, TimeoutException {
         final RPC_Work_Receiver rpc_work_receiver = new RPC_Work_Receiver();
         rpc_work_receiver.connection(IRabbitmq.host, IRabbitmq.port, IRabbitmq.userName, IRabbitmq.passWord, IRabbitmq.virHost);
+        final Channel channel = rpc_work_receiver.createChannel("rpc_receiver_channel");
         //手动确认，接收完一个再收一个
-        rpc_work_receiver.getChannel().basicQos(1);
-        rpc_work_receiver.configQueue(TEST_RPC_ROUTTING_KEY_MAP1, false, false, false, null, false, new DefaultConsumer(rpc_work_receiver.getChannel()) {
+        channel.basicQos(1);
+        rpc_work_receiver.configQueue(channel,TEST_RPC_ROUTTING_KEY_MAP1, false, false, false, null, false, new DefaultConsumer(channel) {
             @Override
             public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
                 System.out.println( "rpc_work_receiver  handleDelivery :" + consumerTag + " data :" + new String(body) );
@@ -54,11 +52,11 @@ public class RPC_Work_Receiver extends BaseRabbitmq {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                rpc_work_receiver.getChannel().basicAck(envelope.getDeliveryTag(), false);
+                channel.basicAck(envelope.getDeliveryTag(), false);
                 //回复消息
                 AMQP.BasicProperties.Builder builder = new AMQP.BasicProperties.Builder();
                 builder.correlationId(properties.getCorrelationId());
-                rpc_work_receiver.getChannel().basicPublish("", properties.getReplyTo(), builder.build(), "reply1 :rpc_work_receiver ! 00000".getBytes());
+                channel.basicPublish("", properties.getReplyTo(), builder.build(), "reply1 :rpc_work_receiver ! 00000".getBytes());
 
             }
         });
@@ -66,9 +64,10 @@ public class RPC_Work_Receiver extends BaseRabbitmq {
 
         final RPC_Work_Receiver rpc_work_receiver1 = new RPC_Work_Receiver();
         rpc_work_receiver1.connection(IRabbitmq.host, IRabbitmq.port, IRabbitmq.userName, IRabbitmq.passWord, IRabbitmq.virHost);
+        final Channel channel1 = rpc_work_receiver1.createChannel("rpc_receiver_channel");
         //手动确认，接收完一个再收一个
-        rpc_work_receiver1.getChannel().basicQos(1);
-        rpc_work_receiver1.configQueue(TEST_RPC_ROUTTING_KEY_MAP1, false, false, false, null, false, new DefaultConsumer(rpc_work_receiver1.getChannel()) {
+        channel1.basicQos(1);
+        rpc_work_receiver1.configQueue(channel,TEST_RPC_ROUTTING_KEY_MAP1, false, false, false, null, false, new DefaultConsumer(channel) {
             @Override
             public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
                 System.out.println( "rpc_work_receiver1  handleDelivery :" + consumerTag + " data :" + new String(body) );
@@ -77,11 +76,11 @@ public class RPC_Work_Receiver extends BaseRabbitmq {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                rpc_work_receiver1.getChannel().basicAck(envelope.getDeliveryTag(), false);
+                channel1.basicAck(envelope.getDeliveryTag(), false);
                 //回复消息
                 AMQP.BasicProperties.Builder builder = new AMQP.BasicProperties.Builder();
                 builder.correlationId(properties.getCorrelationId());
-                rpc_work_receiver1.getChannel().basicPublish("", properties.getReplyTo(), builder.build(), "reply1 :rpc_work_receiver1 ! 22222".getBytes());
+                channel1.basicPublish("", properties.getReplyTo(), builder.build(), "reply1 :rpc_work_receiver1 ! 22222".getBytes());
 
             }
         });

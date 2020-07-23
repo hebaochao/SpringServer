@@ -25,7 +25,7 @@ public class RPC_Drect_Sender extends BaseRabbitmq {
      * @param arguments
      * @throws IOException
      */
-    private void configExchange(boolean durable, boolean autoDelete,
+    private void  configExchange(Channel channel,boolean durable, boolean autoDelete,
                                 Map<String, Object> arguments, String exchange, String queue, String routingKey) throws IOException {
         //定义路由
         channel.exchangeDeclare(exchange, "direct", durable, autoDelete, arguments);
@@ -44,13 +44,13 @@ public class RPC_Drect_Sender extends BaseRabbitmq {
      * @param consumer rpc 调用结果回调/回调结果消息
      * @throws IOException
      */
-    public void pushMessage(String exchange, String routingKey, String msgId, byte[] data, Consumer consumer) throws IOException {
+    public void pushMessage(Channel channel,String exchange, String routingKey, String msgId, byte[] data, Consumer consumer) throws IOException {
         //获取rabbitmq 默认生成的 队列
         String replyQueue = channel.queueDeclare().getQueue();
         AMQP.BasicProperties.Builder builder = new AMQP.BasicProperties.Builder();
         builder.replyTo(replyQueue).correlationId(msgId);
-        super.channel.basicPublish(exchange, routingKey, builder.build(), data);
-        super.channel.basicConsume(replyQueue, true, consumer);
+        channel.basicPublish(exchange, routingKey, builder.build(), data);
+         channel.basicConsume(replyQueue, true, consumer);
     }
 
 
@@ -60,8 +60,9 @@ public class RPC_Drect_Sender extends BaseRabbitmq {
     public static void main(String[] args) throws IOException, TimeoutException {
         RPC_Drect_Sender rpc_drect_sender = new RPC_Drect_Sender();
         rpc_drect_sender.connection(IRabbitmq.host, IRabbitmq.port, IRabbitmq.userName, IRabbitmq.passWord, IRabbitmq.virHost);
-        rpc_drect_sender.configExchange(false, false, null, TEST_RPC_DRECT_EXCHANGE, "rpc_drect_sender_queue", TEST_RPC_DRECT_ROUTINGKEY);
-        rpc_drect_sender.pushMessage(TEST_RPC_DRECT_EXCHANGE, TEST_RPC_DRECT_ROUTINGKEY, "123456", "test123466".getBytes(), new DefaultConsumer(rpc_drect_sender.getChannel()) {
+        Channel channel = rpc_drect_sender.createChannel("test_rpc_sender_channel");
+           rpc_drect_sender.configExchange(channel,false, false, null, TEST_RPC_DRECT_EXCHANGE, "rpc_drect_sender_queue", TEST_RPC_DRECT_ROUTINGKEY);
+        rpc_drect_sender.pushMessage(channel,TEST_RPC_DRECT_EXCHANGE, TEST_RPC_DRECT_ROUTINGKEY, "123456", "test123466".getBytes(), new DefaultConsumer(channel) {
             @Override
             public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
                 System.out.println("receiver rpc handle result :" + properties.getClusterId() + " data :" + new String(body));

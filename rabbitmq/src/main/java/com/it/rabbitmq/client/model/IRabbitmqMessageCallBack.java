@@ -1,7 +1,10 @@
 package com.it.rabbitmq.client.model;
 
+import com.it.rabbitmq.client.base.BaseRabbitmq;
 import com.rabbitmq.client.AMQP;
+import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Envelope;
+
 
 /**
  * @author baochaoh
@@ -19,6 +22,6 @@ public interface IRabbitmqMessageCallBack {
      * @param body
      * @return
      */
-     int handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) ;
+     int handleDelivery(Channel channel, String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body, BaseRabbitmq rabbitmq) ;
 
 }
