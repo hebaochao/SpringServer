@@ -109,8 +109,7 @@ public class RPCClient extends BaseRabbitmq {
         for (int i = 0; i < 100; i++) {
             //多次发送同一种消息
             RabbitmqMessage rabbitmqMessage = new RabbitmqMessage(TEST_RPC_CLIENT_KEY_MAP1, "A" + i, new String("test" + i).getBytes(), new IRabbitmqMessageCallBack() {
-                @Override
-                public int handleDelivery(Channel channel1, String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body, BaseRabbitmq rabbitmq) {
+                public int handleDelivery(Channel channel, String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body, BaseRabbitmq rabbitmq) {
                     //处理回调消息
                     System.out.println("TEST_RPC_ROUTTING_KEY_MAP1 receiver rpc handle result :" + properties.getClusterId() + " data :" + new String(body));
                     return 0;
@@ -125,8 +124,7 @@ public class RPCClient extends BaseRabbitmq {
         for (int i = 0; i < 50; i++) {
             //定义第二种消息
             RabbitmqMessage rabbitmqMessage1 = new RabbitmqMessage(TEST_RPC_CLIENT_KEY_MAP2, "BB", new String("test BB" + i).getBytes(), new IRabbitmqMessageCallBack() {
-                @Override
-                public int handleDelivery(Channel channel3, String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body, BaseRabbitmq rabbitmq) {
+                public int handleDelivery(Channel channel, String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body, BaseRabbitmq rabbitmq) {
                     System.out.println("TEST_RPC_ROUTTING_KEY_MAP2 receiver rpc handle result :" + properties.getClusterId() + " data :" + new String(body));
                     return 0;
                 }
