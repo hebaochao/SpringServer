@@ -3,11 +3,14 @@ package com.it.springaop.model;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -15,6 +18,8 @@ import java.util.Map;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString
+@Slf4j
 public class JoinPointHandler implements Serializable {
 
   /***
@@ -23,6 +28,10 @@ public class JoinPointHandler implements Serializable {
   private Map<String, Object> params = new LinkedHashMap<>();
   private ProceedingJoinPoint pjd;
   private MethodSignature signature;
+  /***
+   * 方法
+   */
+  private Method method;
 
 
   /***
@@ -37,6 +46,7 @@ public class JoinPointHandler implements Serializable {
     joinPointParam.setParams(getJoinPointRequestParams(pjd));
     joinPointParam.setSignature(signature);
     joinPointParam.setPjd(pjd);
+    joinPointParam.setMethod(signature.getMethod());
     return joinPointParam;
   }
 
@@ -103,6 +113,8 @@ public class JoinPointHandler implements Serializable {
     }
     return this.params.get(paramName);
   }
+
+
 
 
 }
