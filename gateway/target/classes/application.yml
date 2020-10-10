@@ -1,0 +1,18 @@
+server:
+  port: 7007
+
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+spring:
+  application:
+    name: gateway
+zuul:
+  routes:
+    user-server:
+         path: /abc/**
+         serverId: user-server
+
+  add-host-header: true
